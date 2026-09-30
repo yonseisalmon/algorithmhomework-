@@ -1,0 +1,6 @@
+.vscode/
+sortbench
+*.o
+*.out
+*.obj
+*.exe
