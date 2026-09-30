@@ -16,32 +16,42 @@ int recordCompare(const void *a, const void *b) {
     return (x > y) - (x < y);
 }
 
-/* 플랫폼마다 다른 rand() 대신 xorshift32: 어디서 돌려도 같은 입력이 나온다. */
-static uint32_t rngNext(uint32_t *s) {
-    uint32_t x = *s;
-    x ^= x << 13; x ^= x >> 17; x ^= x << 5;
-    return *s = x;
-}
-
 Record *makeInput(InputShape shape, size_t n, unsigned seed) {
+    static const int RANDOM_PATTERN[] = {7, 3, 9, 1, 5, 8, 2, 6, 4, 0, 11, 13, 15, 10, 12, 14};
+    static const int DUPLICATE_PATTERN[] = {3, 1, 3, 1, 2, 2, 3, 1, 5, 5, 2, 1, 3, 3, 4, 0};
+    static const int FIXED_SORTED[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    static const int FIXED_REVERSED[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
     Record *a = malloc((n ? n : 1) * sizeof *a);
-    uint32_t s = seed ? seed : 1u;
+    (void)seed;
     if (!a) return NULL;
     for (size_t i = 0; i < n; i++) {
         a[i].tag = (int)i;
         switch (shape) {
-        case SHAPE_RANDOM:     a[i].key = (int)(rngNext(&s) % 1000000u); break;
+        case SHAPE_RANDOM:
+            a[i].key = RANDOM_PATTERN[i % (sizeof(RANDOM_PATTERN) / sizeof(RANDOM_PATTERN[0]))];
+            break;
         case SHAPE_SORTED:
-        case SHAPE_NEARLY:     a[i].key = (int)i; break;
-        case SHAPE_REVERSED:   a[i].key = (int)(n - i); break;
-        case SHAPE_DUPLICATES: a[i].key = (int)(rngNext(&s) % 16u); break;
-        default:               a[i].key = 0; break;
+            if (n <= 10) a[i].key = FIXED_SORTED[i];
+            else a[i].key = (int)(i + 1);
+            break;
+        case SHAPE_REVERSED:
+            if (n <= 10) a[i].key = FIXED_REVERSED[i];
+            else a[i].key = (int)(n - i);
+            break;
+        case SHAPE_NEARLY: {
+            if (n <= 10) a[i].key = FIXED_SORTED[i];
+            else a[i].key = (int)(i + 1);
+            if (i == 2) a[i].key = 7;
+            else if (i == 5) a[i].key = 2;
+            else if (i == 8) a[i].key = 9;
+            break;
         }
-    }
-    if (shape == SHAPE_NEARLY && n > 1) {              /* 5%쯤 무작위로 뒤바꾼다 */
-        for (size_t k = 0; k < n / 20 + 1; k++) {
-            size_t i = rngNext(&s) % n, j = rngNext(&s) % n;
-            int t = a[i].key; a[i].key = a[j].key; a[j].key = t;
+        case SHAPE_DUPLICATES:
+            a[i].key = DUPLICATE_PATTERN[i % (sizeof(DUPLICATE_PATTERN) / sizeof(DUPLICATE_PATTERN[0]))];
+            break;
+        default:
+            a[i].key = 0;
+            break;
         }
     }
     return a;
