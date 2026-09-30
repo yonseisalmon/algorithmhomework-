@@ -51,12 +51,12 @@ static void csvRow(const Row *r) {
 /* 무엇을 잴지는 이 배열 한 곳에만 적는다. */
 typedef struct Spec { const char *section; InputShape shape; size_t n; } Spec;
 static const Spec SPECS[] = {
-    {"정렬 알고리즘 비교 (n=10)", SHAPE_RANDOM,     10},
-    {"정렬 알고리즘 비교 (n=10)", SHAPE_SORTED,     10},
-    {"정렬 알고리즘 비교 (n=10)", SHAPE_REVERSED,   10},
-    {"정렬 알고리즘 비교 (n=10)", SHAPE_DUPLICATES, 10},
+    {"정렬 알고리즘 비교 (n=1000)", SHAPE_RANDOM,     1000},
+    {"정렬 알고리즘 비교 (n=1000)", SHAPE_SORTED,     1000},
+    {"정렬 알고리즘 비교 (n=1000)", SHAPE_REVERSED,   1000},
+    {"정렬 알고리즘 비교 (n=1000)", SHAPE_DUPLICATES, 1000},
 };
-#define REPS 10000
+#define REPS 10
 #define SEED 12345u
 
 static int runSpecs(const RowSink *sink) {
